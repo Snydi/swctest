@@ -11,7 +11,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        $middleware->validateCsrfTokens(except: ['*']); //CSRF защита отключена, так как задание тестовое, нужно чтобы postman работал
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
