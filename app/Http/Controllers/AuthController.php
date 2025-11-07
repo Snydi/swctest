@@ -60,7 +60,7 @@ class AuthController extends Controller
 
     public function logout(Request $request): JsonResponse
     {
-        $request->user()->tokens()->delete();
+        $request->user()->tokens()->delete(); //postman не посылает инфу о юзере
         Auth::guard('web')->logout();
         return response()->json(['message' => 'Успешная деавторизация']);
     }
