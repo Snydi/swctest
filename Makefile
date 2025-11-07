@@ -1,11 +1,13 @@
-.PHONY: install up down reinstall clean _wait_postgres _composer_install _run_migrations _remove_volumes
+.PHONY: install up down reinstall clean _wait_postgres _composer_install _run_migrations _remove_volumes _storage_link _start_queue
 
 install:
 	$(MAKE) up
 	$(MAKE) _wait_postgres
 	$(MAKE) _composer_install
 	$(MAKE) _run_migrations
+	$(MAKE) _storage_link
 	docker-compose -p swctest exec -T php sh -c "cd /var/www/html && php artisan key:generate"
+	$(MAKE) _start_queue
 	@echo "Installation complete."
 
 up:
@@ -36,7 +38,13 @@ _composer_install:
 		composer install --no-interaction --prefer-dist"
 
 _run_migrations:
-	docker-compose -p swctest exec -T php sh -c "cd /var/www/html && php artisan migrate:fresh"
+	docker-compose -p swctest exec -T php sh -c "cd /var/www/html && php artisan migrate:fresh --seed"
+
+_storage_link:
+	docker-compose -p swctest exec -T php sh -c "cd /var/www/html && php artisan storage:link"
+
+_start_queue:
+	docker-compose -p swctest exec -d php sh -c "cd /var/www/html && php artisan queue:work --daemon --sleep=3 --tries=3"
 
 _remove_volumes:
 	@docker volume rm -f swctest_postgres_data 2> nul
